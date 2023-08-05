@@ -1,10 +1,9 @@
 import gradio as gr
-from flask import Flask
 import fasttext
-from configurations.get_constants import constantConfig
-from configurations.get_hyperparameters import hyperparameterConfig
+from .configurations.get_constants import constantConfig
+from .configurations.get_hyperparameters import hyperparameterConfig
 from pyngrok import ngrok
-from funcs.models import load_models
+from .funcs.models import load_models
 
 ngrok.set_auth_token('2QjI3u9txqyB9chbDt1rUJF5th4_31BsnCZFuiZTUoeVMeyui')
 
@@ -22,7 +21,7 @@ from transformers import pipeline
 
 nltk.download('punkt')
 from nltk.tokenize import sent_tokenize
-LID = fasttext.load_model("lid218e.bin")
+LID = fasttext.load_model("OcTra/lid218e.bin")
 
 def detect_language(text,LID):
     predictions = LID.predict(text)
@@ -81,31 +80,32 @@ def test_it(text, lang):
 
     return f'{text} is in {lang}'
 
-with gr.Blocks(title = "Octopus Translation App") as octopus_translator:
-    with gr.Row():
-        gr.Audio(source="microphone")
-    
-    with gr.Row():
-        model_param = gr.Radio(['0.6B', '1.3B', '3.3B'], value='1.3B', label='NLLB Model size', interactive=True)
-        input_type  = gr.Radio(['Whole text', 'Sentence-wise'],value='Sentence-wise', label="Translation Mode", interactive=True)
-        select_type = gr.Radio(['Manually select','Auto-detect'],value='Auto-detect', label="Source Language Selection Mode", interactive=True)
-    
-    with gr.Row():
-        source_language     = gr.Dropdown(list(constants.flores_codes.keys()), value='English', label='Source (if manually selecting)', interactive=True)
-        target_language  = gr.Dropdown(list(constants.flores_codes.keys()), value='German', label='Target', interactive=True)
+def main():
+    with gr.Blocks(title = "Octopus Translation App") as octopus_translator:
+        with gr.Row():
+            gr.Audio(source="microphone")
+        
+        with gr.Row():
+            model_param = gr.Radio(['0.6B', '1.3B', '3.3B'], value='1.3B', label='NLLB Model size', interactive=True)
+            input_type  = gr.Radio(['Whole text', 'Sentence-wise'],value='Sentence-wise', label="Translation Mode", interactive=True)
+            select_type = gr.Radio(['Manually select','Auto-detect'],value='Auto-detect', label="Source Language Selection Mode", interactive=True)
+        
+        with gr.Row():
+            source_language = gr.Dropdown(list(constants.flores_codes.keys()), value='English', label='Source (if manually selecting)', interactive=True)
+            target_language = gr.Dropdown(list(constants.flores_codes.keys()), value='German', label='Target', interactive=True)
 
-    with gr.Row():
-        input_text  = gr.Textbox(lines=5, label="Input text")
-        output_text = gr.JSON(label='Translated text')
-    
-    input_text.submit(
-        translation, 
-        inputs=[
-                model_param, 
-                input_type, select_type,
-                source_language, target_language,
-                input_text],
-        outputs=[output_text]
-        )
+        with gr.Row():
+            input_text  = gr.Textbox(lines=5, label="Input text")
+            output_text = gr.JSON(label='Translated text')
+        
+        input_text.submit(
+            translation, 
+            inputs=[
+                    model_param, 
+                    input_type, select_type,
+                    source_language, target_language,
+                    input_text],
+            outputs=[output_text]
+            )
 
-octopus_translator.launch(share=True)
+    octopus_translator.launch(share=True)
