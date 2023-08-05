@@ -108,4 +108,4 @@ def main():
             outputs=[output_text]
             )
 
-    octopus_translator.launch(share=True)
+    octopus_translator.launch(favicon_path="OcTra/assets/metric-favicon.png", share=True)
